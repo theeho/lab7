@@ -1,0 +1,72 @@
+---
+title: "lab7"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(nnet)
+```
+
+Exercise 1: 
+
+```{r}
+data <- read.csv("data.csv")
+glimpse(data)
+```
+```{r}
+
+data_lv <- data %>% mutate(target = as.factor(target), key = as.factor(ifelse(key == 2, "D", ifelse(key == 3, "D#", "Other"))))
+
+glimpse(data_lv)
+```
+
+
+```{r}
+p <- ggplot(data = data_lv, aes(x = key, fill = target)) +
+  geom_bar(position = "fill") +
+  labs(y = "Proportion", 
+       title = "target vs key") +
+  coord_flip()
+p
+```
+Exercise 2: 
+```{r}
+target_m_red <- glm(target ~ acousticness + danceability + duration_ms + instrumentalness + loudness + speechiness + valence, 
+              data = data_lv, family = binomial)
+tidy(target_m_red, conf.int = TRUE, exponentiate = FALSE) %>% 
+  kable(format = "markdown", digits = 3)
+```
+Exercise 3: 
+```{r}
+target_m_full <- glm(target ~ acousticness + danceability + duration_ms + instrumentalness + loudness + speechiness + valence + key, 
+              data = data_lv, family = binomial)
+```
+
+```{r}
+(dev_red <- glance(target_m_red)$deviance)
+(dev_full <- glance(target_m_full)$deviance)
+(test_stat <- dev_red - dev_full)
+1 - pchisq(test_stat, 8)
+```
+
+There is not significant evidence to suggest that the response depends on the key variable. A p value of .1 is generally very high. But on top of that, the drop-in-deviance statistic suggests that even if the resposne depends on the key, the key will not improve the model by that much at all. Given a high p-value and low deviance statistic when comparing the model with key and the model without key, I conclude that the reduced model (without key) would be the best. approach. 
+
+
+Exercise 4:
+
+```{r}
+model <- target_m_red 
+tidy(model, conf.int = TRUE, exponentiate = FALSE) %>% 
+  kable(format = "markdown", digits = 3)
+```
+It is not appropiate to interpret key D# because it is not included in the model. 
+
+
+
