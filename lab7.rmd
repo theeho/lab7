@@ -55,13 +55,11 @@ target_m_full <- glm(target ~ acousticness + danceability + duration_ms + instru
 ```
 
 ```{r}
-(dev_red <- glance(target_m_red)$deviance)
-(dev_full <- glance(target_m_full)$deviance)
-(test_stat <- dev_red - dev_full)
-1 - pchisq(test_stat, 7)
+
+anova(target_m_red, target_m_full, test = "Chisq")
 ```
 
-There is not significant evidence to suggest that the response depends on the key variable. A p value of .1 is generally very high. But on top of that, the drop-in-deviance statistic suggests that even if the resposne depends on the key, the key will not improve the model by that much at all. Given a high p-value and low deviance statistic when comparing the model with key and the model without key, I conclude that the reduced model (without key) would be the best. approach. 
+There is evidence to suggest that the key is a significant predictor because we have a low p value of .001258. 
 
 
 Exercise 4:
@@ -71,25 +69,24 @@ model <- target_m_full
 tidy(model, conf.int = TRUE, exponentiate = FALSE) %>% 
   kable(format = "markdown", digits = 3)
 ```
-The keyD# coefficent tells us how the log odds of the target = 1 will change if our track is in the key of D#
+The keyD# coefficent tells us how the log odds of the target = 1 will change if our track is in the key of D#. 
+
+Exercise 5:
 
 ```{r}
 m_aug <- augment(model, type.predict = "response", 
                       type.residuals = "deviance")
 
-nbins <- sqrt(nrow(m_aug))
-m_aug %>%
-  arrange(.fitted) %>%
-  summarise(mean_resid = mean(.resid), #y axis
-            mean_pred = mean(.fitted))
+
 ```
+Exercise 6:
 ```{r}
 arm::binnedplot(x = m_aug$.fitted, y = m_aug$.resid,
                 xlab = "Predicted Probabilities", 
                 main = "Binned Residual vs. Predicted Values", 
                 col.int = FALSE)
 ```
-
+Exercise 7:
 ```{r}
 arm::binnedplot(x = m_aug$instrumentalness, 
                 y = m_aug$.resid, 
@@ -97,12 +94,17 @@ arm::binnedplot(x = m_aug$instrumentalness,
                 xlab = "instrumentalness", 
                 main = "Binned Residual vs. instrumentalness")
 ```
-
+Exercise 8: 
 ```{r}
 m_aug %>%
   group_by(key) %>%
   summarise(mean_resid = mean(.resid))
 ```
+
+Exercise 9: 
+TO DO
+
+Exercise 10:
 ```{r}
 (roc_curve <- ggplot(m_aug, 
                      aes(d = as.numeric(target) - 1, 
@@ -111,5 +113,30 @@ m_aug %>%
   geom_abline(intercept = 0) + 
   labs(x = "False Positive Rate (1 - Specificity)", 
        y = "True Positive Rate (Sensitivity)") )
+calc_auc(roc_curve)$AUC
+
 ```
+Exercise 11:
+TODO
+
+Exercise 12:
+```{r}
+threshold <- .493
+```
+TODO 
+
+Exercise 13:
+
+```{r}
+m_aug %>%
+  mutate(predict_target = if_else(.fitted > threshold, "1", "0")) %>%
+  group_by(target, predict_target) %>%
+  summarise(n = n()) %>%
+  kable(format="markdown")
+```
+Exercise 14:
+TODO
+
+
+
 
