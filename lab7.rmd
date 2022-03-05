@@ -41,6 +41,8 @@ p <- ggplot(data = data_lv, aes(x = key, fill = target)) +
   coord_flip()
 p
 ```
+It appears that D and Other both have around an equal proportion of 0 and 1 targets with slightly more 1 target values. Key D# has a little over twice as many 0 target values than 1 target values. 
+
 Exercise 2: 
 ```{r}
 target_m_red <- glm(target ~ acousticness + danceability + duration_ms + instrumentalness + loudness + speechiness + valence, 
@@ -59,7 +61,7 @@ target_m_full <- glm(target ~ acousticness + danceability + duration_ms + instru
 anova(target_m_red, target_m_full, test = "Chisq")
 ```
 
-There is evidence to suggest that the key is a significant predictor because we have a low p value of .001258. 
+There is evidence to suggest that the key is a significant predictor because we have a low p value of .001258. Therefor based on the test, we should add key to the model. 
 
 
 Exercise 4:
@@ -102,7 +104,7 @@ m_aug %>%
 ```
 
 Exercise 9: 
-TO DO
+Both the key and instrumental residuals do not show evidence of constant variance. There also seems to be a partern ascociated with the average residual vs probability plot. Based on this, linearity assumption is not statsfied. 
 
 Exercise 10:
 ```{r}
@@ -117,13 +119,13 @@ calc_auc(roc_curve)$AUC
 
 ```
 Exercise 11:
-TODO
+The model appears to be somewhat effective. However, we would like the AOC to be higher. 
 
 Exercise 12:
 ```{r}
 threshold <- .493
 ```
-TODO 
+I chose this threshold because it is closest to the top left corner of the plot. That is, maximum true positive rate and minimum false positive rate. 
 
 Exercise 13:
 
@@ -135,7 +137,9 @@ m_aug %>%
   kable(format="markdown")
 ```
 Exercise 14:
-TODO
+The proprotion of true positives is 680/(680+340) = 2/3
+The proportion of false positives is 326/(326+671)= .32
+The misclassification rate is (340+326)/(671+326+340+680) = .33 
 
 
 
